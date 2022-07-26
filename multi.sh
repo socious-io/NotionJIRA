@@ -10,6 +10,5 @@ prefixes=("ENG-" "DES-")
 
 for i in ${!databases[@]}; do
   export NOTION_DATABASE_ID="${databases[$i]}"
-  export NOTION_ID_PREFIX="${prefixes[$i]}"
   python main.py
 done

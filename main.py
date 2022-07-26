@@ -1,4 +1,5 @@
-from dotenv import dotenv_values
+from dotenv import load_dotenv
+from os import getenv
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -6,11 +7,10 @@ from sys import exit
 from tqdm.autonotebook import tqdm
 
 # Initial requests setup, handling possible HTTP 429 rate limited errors from Notion.
-config = dotenv_values('.env')
-token = config.get('NOTION_TOKEN')
-db_id = config.get('NOTION_DATABASE_ID')
-id_prop = config.get('NOTION_ID_PROP', 'Ticket ID')
-id_prefix = config.get('NOTION_ID_PREFIX', None)
+load_dotenv('.env')
+token = getenv('NOTION_TOKEN')
+db_id = getenv('NOTION_DATABASE_ID')
+id_prop = getenv('NOTION_ID_PROP', 'Ticket ID')
 if token is None or db_id is None:
     print('You must pass in both NOTION_TOKEN and NOTION_DATABASE_ID as env variables.')
     exit(1)
@@ -113,13 +113,9 @@ def update_ticket_ids(tickets: [str], latest_id: int) -> None:
     print(f'Adding auto-incrementing "Ticket ID" property to {len(tickets)} ticket(s)...')
     for page_id in tqdm(tickets):
         ticket_id += 1
-        if id_prefix:
-            formatted_id = f'{id_prefix}{ticket_id}'
-        else:
-            formatted_id = ticket_id
         r = s.patch(f'{base_url}/pages/{page_id}', json={
             'properties': {
-                'Ticket ID': formatted_id
+                'Ticket ID': ticket_id
             }
         })
         if r.status_code != 200:
